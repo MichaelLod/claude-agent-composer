@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Sparkles, Zap, Trash2, X, Brain, Eraser, Shield, ShieldOff, FolderOpen } from "lucide-react";
+import { Sparkles, Zap, Trash2, X, Brain, Eraser, Shield, ShieldOff, FolderOpen, Wrench } from "lucide-react";
 import useWorkflowStore from "../store/workflowStore";
 
 export default function ConfigPanel() {
@@ -175,6 +175,43 @@ export default function ConfigPanel() {
             />
           </div>
         )}
+
+        {/* Tools */}
+        <div>
+          <label className="text-[11px] font-medium text-text-dim uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+            <Wrench size={11} />
+            Tools {data.tools?.length > 0 ? `(${data.tools.length})` : "(defaults)"}
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {["Read", "Write", "Edit", "Glob", "Grep", "Bash", "WebFetch", "WebSearch"].map((tool) => {
+              const active = (data.tools || []).includes(tool);
+              return (
+                <button
+                  key={tool}
+                  onClick={() => {
+                    const current = data.tools || [];
+                    const next = active
+                      ? current.filter((t) => t !== tool)
+                      : [...current, tool];
+                    updateNodeData(node.id, { tools: next });
+                  }}
+                  className={`px-2 py-1 rounded-md text-[10px] font-medium border transition-all ${
+                    active
+                      ? "border-accent bg-accent/15 text-accent"
+                      : "border-border text-text-dim hover:border-border-bright"
+                  }`}
+                >
+                  {tool}
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-text-dim/70 mt-1.5 leading-tight">
+            {data.tools?.length > 0
+              ? "Custom tool set. Agent will only have these tools."
+              : "Using defaults based on access level. Click tools to customize."}
+          </p>
+        </div>
 
         {/* Prompt */}
         <div>

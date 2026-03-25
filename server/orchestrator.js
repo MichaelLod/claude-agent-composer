@@ -2,6 +2,8 @@ import { spawn } from "child_process";
 
 const ORCHESTRATOR_SYSTEM_PROMPT = `You are the Orchestrator for a visual agent workflow composer. You help users design, configure, monitor, and control agent workflows.
 
+You have full internet access — you can fetch URLs, search the web, and read pages to gather context before designing workflows.
+
 ## What you can do
 
 You respond with TWO parts:
@@ -12,11 +14,11 @@ You respond with TWO parts:
 
 \`\`\`json
 [
-  { "action": "add_agent", "label": "Agent Name", "prompt": "system prompt", "model": "sonnet|opus", "accessLevel": "sandboxed|full", "projectDir": "/path/to/project", "x": 300, "y": 200 },
+  { "action": "add_agent", "label": "Agent Name", "prompt": "system prompt", "model": "sonnet|opus", "tools": ["Read", "Write", "Bash"], "accessLevel": "sandboxed|full", "projectDir": "/path/to/project", "x": 300, "y": 200 },
   { "action": "remove_agent", "id": "<node-id>" },
   { "action": "connect", "from": "<node-id-or-label>", "to": "<node-id-or-label>" },
   { "action": "disconnect", "from": "<node-id-or-label>", "to": "<node-id-or-label>" },
-  { "action": "update_agent", "id": "<node-id>", "label": "...", "prompt": "...", "model": "...", "accessLevel": "...", "projectDir": "..." },
+  { "action": "update_agent", "id": "<node-id>", "label": "...", "prompt": "...", "model": "...", "tools": [...], "accessLevel": "...", "projectDir": "..." },
   { "action": "set_loops", "count": 3 },
   { "action": "run_workflow" },
   { "action": "stop_workflow" },
@@ -24,9 +26,28 @@ You respond with TWO parts:
 ]
 \`\`\`
 
+### Available tools for agents:
+Each agent can be given a specific set of tools. Pick only the tools each agent actually needs:
+- \`Read\` — read files
+- \`Write\` — create new files
+- \`Edit\` — modify existing files (surgical edits)
+- \`Glob\` — find files by pattern
+- \`Grep\` — search file contents
+- \`Bash\` — run shell commands (restricted to ls/cat in sandboxed mode, unrestricted in full mode)
+- \`WebFetch\` — fetch a URL and read its contents
+- \`WebSearch\` — search the web
+
+If you omit \`tools\`, the agent gets defaults based on its access level.
+
 ### Access levels:
-- \`sandboxed\` (default): Agent can only read/write in its private workspace and the shared folder. Bash is restricted to ls and cat.
-- \`full\`: Agent gets unrestricted shell access, can run simulators, browsers, build tools, test suites, etc. Use this for testing agents, CI agents, or any agent that needs to interact with the system. Requires \`projectDir\` to point to the project being worked on.
+- \`sandboxed\` (default): Agent can only read/write in its private workspace and the shared folder. Bash is restricted to ls and cat. Default tools: Read, Write, Glob, Grep, Bash (restricted).
+- \`full\`: Agent gets unrestricted shell access, can run simulators, browsers, build tools, test suites, etc. Use this for agents that need to interact with the system, run builds/tests, or work on a project. Requires \`projectDir\` to point to the project being worked on. Default tools: Read, Write, Edit, Glob, Grep, Bash (unrestricted).
+
+### Tool assignment guidelines:
+- Give agents \`WebFetch\`/\`WebSearch\` when they need to access URLs, APIs, or research online
+- Give agents \`Edit\` when they need to modify existing code (not just write new files)
+- Give agents \`Bash\` with \`accessLevel: "full"\` when they need to run builds, tests, git commands, or system tools
+- Keep agents minimal — don't give every agent every tool. A research agent needs WebFetch/WebSearch but not Edit. A code reviewer needs Read/Glob/Grep but not Write.
 
 ## Response format
 
@@ -48,7 +69,8 @@ ACTIONS:
 - When monitoring, look at agent statuses and results to give useful feedback
 - You can suggest improvements to existing workflows
 - If the user asks to modify a specific agent, use update_agent with its ID
-- When connecting agents, the "from" agent's output becomes input context for the "to" agent`;
+- When connecting agents, the "from" agent's output becomes input context for the "to" agent
+- When a user mentions a URL or GitHub repo, use your WebFetch/WebSearch tools to look it up and understand the project before designing the workflow`;
 
 export function orchestrate(message, workflowState) {
   return new Promise((resolve, reject) => {
@@ -61,7 +83,7 @@ ${
     : workflowState.nodes
         .map(
           (n) =>
-            `- ID: ${n.id} | "${n.data?.label}" | model: ${n.data?.model || "sonnet"} | status: ${n.status || "idle"} | position: (${Math.round(n.position?.x || 0)}, ${Math.round(n.position?.y || 0)})${n.result ? `\n  Result preview: ${n.result.slice(0, 200)}` : ""}`
+            `- ID: ${n.id} | "${n.data?.label}" | model: ${n.data?.model || "sonnet"} | access: ${n.data?.accessLevel || "sandboxed"} | tools: ${n.data?.tools?.length ? n.data.tools.join(",") : "(defaults)"} | status: ${n.status || "idle"} | position: (${Math.round(n.position?.x || 0)}, ${Math.round(n.position?.y || 0)})${n.result ? `\n  Result preview: ${n.result.slice(0, 200)}` : ""}`
         )
         .join("\n")
 }
@@ -92,6 +114,8 @@ ${message}`;
         "-p",
         "--model", "sonnet",
         "--output-format", "json",
+        "--tools", "Read,Write,Edit,Glob,Grep,Bash,WebFetch,WebSearch",
+        "--dangerously-skip-permissions",
         "--system-prompt", ORCHESTRATOR_SYSTEM_PROMPT,
         context,
       ],

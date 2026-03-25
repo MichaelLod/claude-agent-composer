@@ -39,6 +39,7 @@ const useWorkflowStore = create((set, get) => ({
         model: data.model || "sonnet",
         accessLevel: data.accessLevel || "sandboxed",
         projectDir: data.projectDir || "",
+        tools: data.tools || [],
       },
     };
     set((state) => ({ nodes: [...state.nodes, newNode] }));

@@ -127,17 +127,22 @@ function runAgent(prompt, systemPrompt, model, agentId, data, signal) {
       "--system-prompt", systemPrompt,
     ];
 
+    // Use explicit tools list if provided, otherwise fall back to access level defaults
+    const agentTools = data.tools && data.tools.length > 0 ? data.tools : null;
+
     if (accessLevel === "full") {
-      // Full system access — unrestricted tools
-      args.push("--tools", "Read,Write,Glob,Grep,Bash,Edit");
+      const toolList = agentTools ? agentTools.join(",") : "Read,Write,Glob,Grep,Bash,Edit";
+      args.push("--tools", toolList);
       args.push("--dangerously-skip-permissions");
       if (projectDir) {
         args.push("--add-dir", projectDir);
       }
     } else {
-      // Sandboxed — limited tools
-      args.push("--tools", "Read,Write,Glob,Grep,Bash");
-      args.push("--allowedTools", "Read Write Glob Grep Bash(ls:*) Bash(cat:*)");
+      const toolList = agentTools ? agentTools.join(",") : "Read,Write,Glob,Grep,Bash";
+      args.push("--tools", toolList);
+      if (!agentTools) {
+        args.push("--allowedTools", "Read Write Glob Grep Bash(ls:*) Bash(cat:*)");
+      }
     }
 
     args.push(prompt);

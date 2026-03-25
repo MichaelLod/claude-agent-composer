@@ -47,6 +47,7 @@ export default function OrchestratorPanel() {
             model: action.model || "sonnet",
             accessLevel: action.accessLevel || "sandboxed",
             projectDir: action.projectDir || "",
+            tools: action.tools || [],
             position: { x: action.x || 300, y: action.y || 200 },
           });
           break;
@@ -81,6 +82,7 @@ export default function OrchestratorPanel() {
           if (action.model) updates.model = action.model;
           if (action.accessLevel) updates.accessLevel = action.accessLevel;
           if (action.projectDir !== undefined) updates.projectDir = action.projectDir;
+          if (action.tools) updates.tools = action.tools;
           state.updateNodeData(action.id, updates);
           break;
         }
@@ -311,7 +313,7 @@ export default function OrchestratorPanel() {
 function formatAction(action) {
   switch (action.action) {
     case "add_agent":
-      return `Add "${action.label}" (${action.model || "sonnet"})`;
+      return `Add "${action.label}" (${action.model || "sonnet"}${action.tools?.length ? `, ${action.tools.length} tools` : ""})`;
     case "remove_agent":
       return `Remove agent ${action.id}`;
     case "connect":
