@@ -76,9 +76,14 @@ ACTIONS:
 - NEVER tell the user to manually configure agents. You have full control — set accessLevel, projectDir, tools, and everything else yourself via actions. The user should not have to click anything after you build the workflow.
 - When agents need to read/write code, run tests, or execute commands on a project, ALWAYS set \`accessLevel: "full"\` and \`projectDir\` to the project path. Do this automatically — do not leave it for the user.`;
 
-export function orchestrate(message, workflowState) {
+export function orchestrate(message, workflowState, history = []) {
   return new Promise((resolve, reject) => {
-    const context = `## Current workflow state
+    // Build conversation history section
+    const historySection = history.length > 0
+      ? `## Conversation history:\n${history.map((m) => `${m.role === "user" ? "User" : "You"}: ${m.content}`).join("\n\n")}\n\n`
+      : "";
+
+    const context = `${historySection}## Current workflow state
 
 ### Agents on canvas:
 ${
@@ -109,7 +114,7 @@ ${
 - Loop count: ${workflowState.loopCount || 1}
 - Running: ${workflowState.isRunning ? "yes" : "no"}
 
-## User message:
+## Current user message:
 ${message}`;
 
     const proc = spawn(

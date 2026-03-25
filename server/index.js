@@ -136,8 +136,8 @@ app.delete("/api/agents/:id/memory", (req, res) => {
 // --- Orchestrator ---
 app.post("/api/orchestrate", async (req, res) => {
   try {
-    const { message, workflowState } = req.body;
-    const result = await orchestrate(message, workflowState);
+    const { message, history, workflowState } = req.body;
+    const result = await orchestrate(message, workflowState, history);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });

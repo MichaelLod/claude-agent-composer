@@ -173,10 +173,15 @@ export default function OrchestratorPanel() {
         isRunning,
       };
 
+      // Build conversation history (exclude the initial greeting)
+      const history = [...messages, { role: "user", content: userMsg }]
+        .filter((m, i) => i > 0)
+        .map((m) => ({ role: m.role, content: m.content }));
+
       const res = await fetch("/api/orchestrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg, workflowState }),
+        body: JSON.stringify({ message: userMsg, history, workflowState }),
       });
 
       const data = await res.json();
