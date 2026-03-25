@@ -126,7 +126,6 @@ ${message}`;
         "-p",
         "--model", "sonnet",
         "--output-format", "json",
-        "--tools", "Read,Write,Edit,Glob,Grep,Bash,WebFetch,WebSearch",
         "--dangerously-skip-permissions",
         "--system-prompt", ORCHESTRATOR_SYSTEM_PROMPT,
         context,
@@ -155,7 +154,7 @@ ${message}`;
         // Try to parse as JSON (claude output format)
         try {
           const json = JSON.parse(stdout);
-          text = json.result || stdout;
+          text = typeof json.result === "string" ? json.result : stdout;
         } catch {}
 
         // Parse the MESSAGE: and ACTIONS: sections

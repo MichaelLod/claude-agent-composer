@@ -169,7 +169,7 @@ function runAgent(prompt, systemPrompt, model, agentId, data, signal) {
       }
       try {
         const json = JSON.parse(stdout);
-        resolve(json.result || stdout);
+        resolve(typeof json.result === "string" ? json.result : stdout);
       } catch {
         resolve(stdout.trim());
       }
