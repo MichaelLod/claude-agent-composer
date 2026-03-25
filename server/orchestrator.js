@@ -72,7 +72,9 @@ ACTIONS:
 - If the user asks to modify a specific agent, use update_agent with its ID
 - When connecting agents, the "from" agent's output becomes input context for the "to" agent
 - When a user mentions a URL or GitHub repo, use your WebFetch/WebSearch tools to look it up and understand the project, then immediately build the workflow based on what you find. Do NOT ask the user to describe the repo — you can read it yourself.
-- If the user mentions a GitHub repo, assume they have it cloned locally. Use the repo name as a hint for the project directory (e.g., ~/Work/<repo-name> or ~/Projects/<repo-name>). If unsure, set projectDir to a reasonable default and tell the user they can update it.`;
+- If the user mentions a GitHub repo, USE YOUR TOOLS to find the local clone. Run \`find ~ -maxdepth 4 -type d -name "<repo-name>" 2>/dev/null\` via Bash to locate it. Once found, set \`projectDir\` to the actual path on every agent that needs it.
+- NEVER tell the user to manually configure agents. You have full control — set accessLevel, projectDir, tools, and everything else yourself via actions. The user should not have to click anything after you build the workflow.
+- When agents need to read/write code, run tests, or execute commands on a project, ALWAYS set \`accessLevel: "full"\` and \`projectDir\` to the project path. Do this automatically — do not leave it for the user.`;
 
 export function orchestrate(message, workflowState) {
   return new Promise((resolve, reject) => {
