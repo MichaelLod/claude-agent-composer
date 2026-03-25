@@ -8,6 +8,7 @@ import {
   Save,
   Upload,
   Workflow,
+  Infinity,
 } from "lucide-react";
 import useWorkflowStore from "../store/workflowStore";
 
@@ -134,13 +135,13 @@ export default function Toolbar() {
         <div className="flex items-center bg-surface-2 rounded-lg border border-border">
           <button
             onClick={() => setLoopCount(loopCount - 1)}
-            disabled={loopCount <= 1 || isRunning}
+            disabled={loopCount <= 0 || isRunning}
             className="p-1 hover:bg-surface-3 rounded-l-lg text-text-dim hover:text-text disabled:opacity-30 transition-colors"
           >
             <Minus size={12} />
           </button>
           <span className="px-2 text-xs font-medium min-w-[24px] text-center">
-            {loopCount}
+            {loopCount === 0 ? "∞" : loopCount}
           </span>
           <button
             onClick={() => setLoopCount(loopCount + 1)}
@@ -150,10 +151,22 @@ export default function Toolbar() {
             <Plus size={12} />
           </button>
         </div>
+        <button
+          onClick={() => setLoopCount(loopCount === 0 ? 1 : 0)}
+          disabled={isRunning}
+          className={`p-1.5 rounded-lg transition-colors ${
+            loopCount === 0
+              ? "bg-accent/20 text-accent"
+              : "hover:bg-surface-2 text-text-dim hover:text-text"
+          } disabled:opacity-30`}
+          title={loopCount === 0 ? "Infinite mode (runs until stopped)" : "Toggle infinite mode"}
+        >
+          <Infinity size={13} />
+        </button>
 
-        {isRunning && totalLoops > 0 && (
+        {isRunning && (
           <span className="text-[11px] text-running ml-1">
-            {currentLoop}/{totalLoops}
+            {currentLoop}/{totalLoops === "∞" || totalLoops === Infinity ? "∞" : totalLoops}
           </span>
         )}
       </div>

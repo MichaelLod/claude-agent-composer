@@ -27,7 +27,7 @@ You respond with TWO parts:
   { "action": "connect", "from": "<node-id-or-label>", "to": "<node-id-or-label>" },
   { "action": "disconnect", "from": "<node-id-or-label>", "to": "<node-id-or-label>" },
   { "action": "update_agent", "id": "<node-id>", "label": "...", "prompt": "...", "model": "...", "tools": [...], "accessLevel": "...", "projectDir": "..." },
-  { "action": "set_loops", "count": 3 },
+  { "action": "set_loops", "count": 3 },  // use 0 for infinite (runs until manually stopped)
   { "action": "run_workflow" },
   { "action": "stop_workflow" },
   { "action": "clear_all" }

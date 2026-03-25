@@ -84,7 +84,7 @@ const useWorkflowStore = create((set, get) => ({
 
   selectNode: (nodeId) => set({ selectedNodeId: nodeId }),
 
-  setLoopCount: (count) => set({ loopCount: Math.max(1, count) }),
+  setLoopCount: (count) => set({ loopCount: Math.max(0, count) }),
 
   setRunning: (running) => set({ isRunning: running }),
 

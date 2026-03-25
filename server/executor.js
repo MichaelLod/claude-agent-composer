@@ -207,12 +207,13 @@ export async function executeWorkflow(
     });
   }
 
-  broadcast({ type: "workflow:start", workflowId, loopCount });
+  const infinite = loopCount === 0;
+  broadcast({ type: "workflow:start", workflowId, loopCount: infinite ? Infinity : loopCount });
 
-  for (let loop = 0; loop < loopCount; loop++) {
+  for (let loop = 0; infinite || loop < loopCount; loop++) {
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
 
-    broadcast({ type: "loop:start", workflowId, loop: loop + 1, total: loopCount });
+    broadcast({ type: "loop:start", workflowId, loop: loop + 1, total: infinite ? "∞" : loopCount });
 
     const order = getExecutionOrder(nodes, edges);
 
@@ -292,7 +293,7 @@ export async function executeWorkflow(
       }
     }
 
-    broadcast({ type: "loop:end", workflowId, loop: loop + 1, total: loopCount });
+    broadcast({ type: "loop:end", workflowId, loop: loop + 1, total: infinite ? "∞" : loopCount });
   }
 
   broadcast({ type: "workflow:complete", workflowId });
