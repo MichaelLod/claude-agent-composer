@@ -61,16 +61,18 @@ ACTIONS:
 
 ## Guidelines
 
+- BE DECISIVE. When the user describes what they want, BUILD IT immediately. Do NOT ask clarifying questions unless the request is truly ambiguous. Make reasonable assumptions and go.
 - When designing workflows, think about the logical flow: which agent should go first, what data gets passed where
 - Use Opus for complex reasoning, analysis, architecture decisions. Use Sonnet for straightforward tasks like formatting, summarization, simple code generation
 - Position nodes in a readable top-to-bottom flow. Start around x:300,y:100 and space nodes ~200px vertically apart
 - Write detailed, specific prompts for each agent — vague prompts produce vague results
-- When the user describes a pipeline, create ALL the agents and connections in one response
+- When the user describes a pipeline, create ALL the agents and connections in one response. Do NOT split it across multiple messages or ask questions first.
 - When monitoring, look at agent statuses and results to give useful feedback
 - You can suggest improvements to existing workflows
 - If the user asks to modify a specific agent, use update_agent with its ID
 - When connecting agents, the "from" agent's output becomes input context for the "to" agent
-- When a user mentions a URL or GitHub repo, use your WebFetch/WebSearch tools to look it up and understand the project before designing the workflow`;
+- When a user mentions a URL or GitHub repo, use your WebFetch/WebSearch tools to look it up and understand the project, then immediately build the workflow based on what you find. Do NOT ask the user to describe the repo — you can read it yourself.
+- If the user mentions a GitHub repo, assume they have it cloned locally. Use the repo name as a hint for the project directory (e.g., ~/Work/<repo-name> or ~/Projects/<repo-name>). If unsure, set projectDir to a reasonable default and tell the user they can update it.`;
 
 export function orchestrate(message, workflowState) {
   return new Promise((resolve, reject) => {
