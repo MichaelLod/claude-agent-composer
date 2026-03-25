@@ -123,6 +123,7 @@ ${message}`;
       ],
       {
         stdio: ["pipe", "pipe", "pipe"],
+        cwd: process.env.HOME,
         env: { ...process.env },
       }
     );
